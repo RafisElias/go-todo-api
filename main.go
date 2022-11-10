@@ -4,17 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
-	"os"
 	"strings"
-	"time"
 
 	"github.com/RafisElias/todo-api/configs"
+	m "github.com/RafisElias/todo-api/middleware"
 	"github.com/RafisElias/todo-api/todo"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/google/uuid"
 )
 
 var temp = template.Must(template.ParseGlob("templates/*.html"))
@@ -35,7 +32,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(requestLogger)
+	r.Use(m.RequestLogger)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		temp.ExecuteTemplate(w, "Index", nil)
@@ -60,37 +57,4 @@ func main() {
 
 	fmt.Printf("⚡️[server]: Server is running at http://localhost%s \n", PORT)
 	http.ListenAndServe(PORT, r)
-}
-
-// HTTP middleware setting a value on the request context
-func requestLogger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := os.MkdirAll("logs", 0750)
-		if err != nil && !os.IsExist(err) {
-			log.Print(err)
-		}
-
-		file, err := os.OpenFile(
-			"logs/reqLog.log",
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY,
-			0666,
-		)
-
-		if err != nil {
-			log.Print(err)
-		} else {
-			dateTime := time.Now().Format("20060102 15:04:05")
-			id := uuid.New()
-			message := fmt.Sprintf("%s\t%v\t%s\t%s\t%s\n", dateTime, id, r.Method, r.URL, r.Host)
-			_, err = file.Write([]byte(message))
-
-			if err != nil {
-				log.Print(err)
-			}
-		}
-
-		defer file.Close()
-
-		next.ServeHTTP(w, r)
-	})
 }
