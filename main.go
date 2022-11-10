@@ -38,6 +38,14 @@ func main() {
 		temp.ExecuteTemplate(w, "Index", nil)
 	})
 
+	r.Handle(
+		"/css/*",
+		http.StripPrefix(
+			"/css/",
+			http.FileServer(http.Dir("css")),
+		),
+	)
+
 	r.Route("/api/todos", todo.TodoRouters)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
