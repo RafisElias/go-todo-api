@@ -2,9 +2,11 @@ package todo
 
 import "errors"
 
-var ErrTodoIsEmpty = errors.New("error: Todo can't be empty")
-var ErrTitleIsRequired = errors.New("error: title is required")
-var ErrDescriptionIsRequired = errors.New("error: description is required")
+var (
+	ErrTodoIsEmpty           = errors.New("error: Todo can't be empty")
+	ErrTitleIsRequired       = errors.New("error: title is required")
+	ErrDescriptionIsRequired = errors.New("error: description is required")
+)
 
 type Todo struct {
 	ID          int64  `json:"id"`

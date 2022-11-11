@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
+	"todo-api/api"
+	"todo-api/api/todo"
 
-	"github.com/RafisElias/todo-api/configs"
-	m "github.com/RafisElias/todo-api/middleware"
-	"github.com/RafisElias/todo-api/todo"
+	"todo-api/configs"
+	m "todo-api/middleware"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -34,10 +37,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(m.RequestLogger)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		temp.ExecuteTemplate(w, "Index", nil)
-	})
-
+	r.Get("/", IndexHandler)
 	r.Handle(
 		"/css/*",
 		http.StripPrefix(
@@ -46,23 +46,34 @@ func main() {
 		),
 	)
 
-	r.Route("/api/todos", todo.TodoRouters)
-
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(404)
-		if strings.Contains(r.Header.Get("Accept"), "text/html") {
-			temp.ExecuteTemplate(w, "NotFound", nil)
-		} else if strings.Contains(r.Header.Get("Accept"), "json") {
-			w.Header().Add("Content-type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": fmt.Sprintf(`🔍 - Not Found - %s`, r.URL),
-			})
-		} else {
-			w.Header().Add("Content-type", "text/plain")
-			w.Write([]byte(fmt.Sprintf(`🔍 - Not Found - %s`, r.URL)))
-		}
-	})
+	r.Route("/api", api.Routers)
+	r.NotFound(notFoundRoute)
 
 	fmt.Printf("⚡️[server]: Server is running at http://localhost%s \n", PORT)
-	http.ListenAndServe(PORT, r)
+	if err := http.ListenAndServe(PORT, r); err != nil {
+		log.Panic(err)
+	}
+}
+
+func notFoundRoute(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(404)
+	if strings.Contains(r.Header.Get("Accept"), "text/html") {
+		if err := temp.ExecuteTemplate(w, "NotFound", nil); err != nil {
+			log.Println(err)
+		}
+	} else if strings.Contains(r.Header.Get("Accept"), "json") {
+		w.Header().Add("Content-type", "application/json")
+		if err := json.NewEncoder(w).Encode(map[string]string{
+			"message": fmt.Sprintf(`🔍 - Not Found - %s`, r.URL),
+		}); err != nil {
+			log.Println(err)
+		}
+	} else {
+		w.Header().Add("Content-type", "text/plain")
+		if _, err := w.Write(
+			[]byte(fmt.Sprintf(`🔍 - Not Found - %s`, r.URL)),
+		); err != nil {
+			log.Println(err)
+		}
+	}
 }

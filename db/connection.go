@@ -3,8 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"todo-api/configs"
 
-	"github.com/RafisElias/todo-api/configs"
 	_ "github.com/lib/pq"
 )
 

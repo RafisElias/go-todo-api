@@ -3,8 +3,7 @@ package todo
 import (
 	"database/sql"
 	"fmt"
-
-	"github.com/RafisElias/todo-api/db"
+	"todo-api/db"
 )
 
 func InsertTodo(todo Todo) (insertedTodo Todo, err error) {

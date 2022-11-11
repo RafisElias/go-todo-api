@@ -2,7 +2,7 @@ package todo
 
 import "github.com/go-chi/chi/v5"
 
-func TodoRouters(r chi.Router) {
+func Routers(r chi.Router) {
 	r.Post("/", createTodoHandler)
 	r.Get("/", findAllTodosHandler)
 	r.Route("/{id}", func(r chi.Router) {

@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// HTTP middleware setting a value on the request context
+// RequestLogger HTTP middleware setting a value on the request context
 func RequestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		message := fmt.Sprintf("%s\t%s\t%s", r.Method, r.URL, r.Host)
@@ -35,8 +35,12 @@ func logEvents(message, filename string) {
 		log.Print(err)
 	} else {
 		dateTime := time.Now()
-		id := uuid.New()
-		message = fmt.Sprintf("%s\t%v\t%s\n", dateTime, id, message)
+		message = fmt.Sprintf(
+			"%s\t%v\t%s\n",
+			dateTime,
+			uuid.New(),
+			message,
+		)
 		_, err = file.Write([]byte(message))
 
 		if err != nil {
